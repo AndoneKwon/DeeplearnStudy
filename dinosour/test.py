@@ -3,16 +3,19 @@ import time
 import numpy as np
 import keyboard
 import glob
+import csv
 from PIL import ImageGrab
+
+file=open("C:/Users/권진우/Documents/GitHub/DeeplearnStudy/dinosour/data.csv","a",newline='')#파일을 생성 혹은 오픈
+csv_write=csv.writer(file)#연 파일을 csv로 바꿔줌
 
 def screen_record():
     #out = cv2.VideoWriter('out.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (650,150))
 
     last_time = time.time()
-
     # 공룡 사진을 읽음 -> 패턴으로 사용
     dino = cv2.imread('dino.jpg', 0)
-    w_dino, h_dino = dino.shape[::-1]#image shaple을 너비와 높이를 저장한다.
+    w_dino, h_dino = dino.shape[::-1]#image shaple을 너비와 높이를 저장한다. 값은 3차원 행렬로 return 된다.
 
     # glob 로컬 파일을 읽는 라이브러리 -> 장애물 사진들을 읽음 -> 패턴으로 사용
     files = glob.glob ('obstacle/*.jpg')
@@ -61,7 +64,10 @@ def screen_record():
         # pts에 저장된 정보 중에서 필요한 정보를 추출
         if pts:
             arr = np.array(pts)
-            print('dinoH', dinoH, 'dist', min(arr[: ,0]) - dinoX, ' height', min(arr[0, :]))
+            dist=min(arr[: ,0])-dinoX
+            height=min(arr[0, :])
+            print('dinoH', dinoH, 'dist', dist, ' height', height)
+            csv_write.writerow([dinoH,dist,height])
 
         cv2.imshow('window', printscreen)
         #out.write(printscreen)
@@ -71,3 +77,4 @@ def screen_record():
         
 
 screen_record()
+file.close()
