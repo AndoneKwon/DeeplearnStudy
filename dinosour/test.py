@@ -12,7 +12,7 @@ def screen_record():
 
     # 공룡 사진을 읽음 -> 패턴으로 사용
     dino = cv2.imread('dino.jpg', 0)
-    w_dino, h_dino = dino.shape[::-1]
+    w_dino, h_dino = dino.shape[::-1]#image shaple을 너비와 높이를 저장한다.
 
     # glob 로컬 파일을 읽는 라이브러리 -> 장애물 사진들을 읽음 -> 패턴으로 사용
     files = glob.glob ('obstacle/*.jpg')
@@ -43,7 +43,7 @@ def screen_record():
         threshold = 0.8 # 유사도의 스레시홀드 그냥 유사도라고 보면 됨 
         loc_dino = np.where(res_dino >= threshold) # 그 유사도 이상으로 매치된 영역을 찾고 저장
 
-        for pt in zip(*loc_dino[::-1]):
+        for pt in zip(*loc_dino[::-1]):#zip 안에 있는 정보 대입 하며 반복
             cv2.rectangle(printscreen, pt, (pt[0] + w_dino, pt[1] + h_dino + 9), (50,205,50), 1) # 위에서 찾은 영역을 직사각형 모양으로 원본화면에 표시
             dinoX = pt[0] + w_dino
             dinoH = pt[1]
