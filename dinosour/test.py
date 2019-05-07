@@ -4,6 +4,7 @@ import numpy as np
 import keyboard
 import glob
 import csv
+from pynput.mouse import Controller
 from PIL import ImageGrab
 
 file=open("C:/Users/권진우/Documents/GitHub/DeeplearnStudy/dinosour/data.csv","a",newline='')#파일을 생성 혹은 오픈
@@ -23,23 +24,48 @@ def screen_record():
     for file in files:
         tmp = cv2.imread(file, 0)
         obstacles.append(tmp)
+    print('press up and down')
+    while True:
+        if keyboard.is_pressed('up'):
+            print('up is pressed')
+            (x0, y0) = Controller().position
+            break
+
+    while True:
+        if keyboard.is_pressed('down'):
+            print('up is down')
+            (x1, y1) = Controller().position
+            break
+    if x0 < x1:
+        p0 = x0
+        p2 = x1
+    elif x0 > x1:
+        p0 = x1
+        p2 = x0
+
+    if y0 < y1:
+        p1 = y0
+        p3 = y1
+    elif y0 > y1:
+        p1 = y1
+        p3 = y0
 
     # 메인 루프
     while(True):
         # 스크린 캡쳐 즉 원본화면
-        printscreen = np.array(ImageGrab.grab(bbox=(650,350,1300,500)))
+        printscreen = np.array(ImageGrab.grab(bbox=(p0,p1,p2,p3)))
 
         # 현재 화면에 존재하는 모든 장애물을 저장하는 튜플
         pts = []
 
         # 키보드 인풋 up(뛰기) down(숙이기) q(종료)
-        if keyboard.is_pressed('up'):
-            print('up')
-        elif keyboard.is_pressed('down'):
-            print('down')
-        elif cv2.waitKey(20) & keyboard.is_pressed('q'): #0xFF == ord('q'):
-            cv2.destroyAllWindows()
-            break
+#        if keyboard.is_pressed('up'):
+#            print('up')
+#        elif keyboard.is_pressed('down'):
+#            print('down')
+#        elif cv2.waitKey(20) & keyboard.is_pressed('q'): #0xFF == ord('q'):
+#            cv2.destroyAllWindows()
+#            break
 
         scr_gray = cv2.cvtColor(printscreen, cv2.COLOR_BGR2GRAY) # 캡쳐한 이미지를 그레이 톤으로 필터링
         res_dino = cv2.matchTemplate(scr_gray, dino, cv2.TM_CCOEFF_NORMED) # 필터링 된 이미지에서 공룡 이미지 패턴을 찾고 그 정보를 저장
@@ -68,6 +94,13 @@ def screen_record():
             height=min(arr[0, :])
             print('dinoH', dinoH, 'dist', dist, ' height', height)
             csv_write.writerow([dinoH,dist,height])
+            if keyboard.is_pressed('up'):
+                print('up')
+            elif keyboard.is_pressed('down'):
+                print('down')
+            elif cv2.waitKey(20) & keyboard.is_pressed('q'): #0xFF == ord('q'):
+                cv2.destroyAllWindows()
+                break
 
         cv2.imshow('window', printscreen)
         #out.write(printscreen)
