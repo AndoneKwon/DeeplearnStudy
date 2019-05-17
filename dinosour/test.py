@@ -109,5 +109,9 @@ def screen_record():
         last_time = time.time()
         
 
+def Learning():
+    file=open("C:/Users/권진우/Documents/GitHub/DeeplearnStudy/dinosour/data.csv","r",newline='')#파일을 생성 혹은 오픈
+    
+        
 screen_record()
 file.close()
