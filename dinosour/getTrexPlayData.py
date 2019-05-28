@@ -92,8 +92,8 @@ def screen_record():
             speed = pre_dist - current_dist
             if speed < 0:
                 speed = 0
-            print('pressed', key_pressed, 'obstacle', obstacle_index, 'obstacleX', obstacleX, 'obstacleY', obstacleY, 'obstacleH', min(arr[0, :]), 'dist', current_dist, 'dinoH', dinoH, 'speed', speed)
-            csvwriter.writerow([key_pressed, obstacle_index, obstacleX, obstacleY, min(arr[0, :]), current_dist, dinoH, speed])
+            print('obstacle', obstacle_index, 'obstacleX', obstacleX, 'obstacleY', obstacleY, 'obstacleH', min(arr[0, :]), 'dist', current_dist, 'dinoH', dinoH, 'speed', speed, 'pressed', key_pressed)
+            csvwriter.writerow([obstacle_index, obstacleX, obstacleY, min(arr[0, :]), current_dist, dinoH, speed, key_pressed])
         cv2.imshow('window', printscreen)
         #out.write(printscreen)
         cv2.waitKey(10)
