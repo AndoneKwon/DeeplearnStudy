@@ -4,18 +4,18 @@ import csv
 import numpy as np
 import keyboard
 import glob
+import tensorflow as tf
+import os
 from PIL import ImageGrab
 
 
 #데이터 저장
-csvfile = open('playdata.csv', 'a', newline='') # 이어쓰기모드
+csvfile = open('playdata.csv', 'r', newline='') # 이어쓰기모드
 #csvfile = open('playdata.csv', 'w', newline='') # 새로쓰기모드
 csvwriter = csv.writer(csvfile)
-
+tf.reset_default_graph()
 def screen_record():
     #out = cv2.VideoWriter('out.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (650,150))
-
-
 
     # 공룡 사진을 읽음 -> 패턴으로 사용
     dino = cv2.imread('dino.jpg', 0)
@@ -63,6 +63,7 @@ def screen_record():
         for pt in zip(*loc[::-1]):
             print('gameover')
             csvfile.close()
+            exit()
           
         #sys.exit()
           
@@ -95,12 +96,63 @@ def screen_record():
             speed = pre_dist - current_dist
             if speed < 0:
                 speed = 0
-            print('obstacle', obstacle_index, 'obstacleX', obstacleX, 'obstacleY', obstacleY, 'obstacleH', min(arr[0, :]), 'dist', current_dist, 'dinoH', dinoH, 'speed', speed, 'pressed', key_pressed)
-            csvwriter.writerow([obstacle_index, obstacleX, obstacleY, min(arr[0, :]), current_dist, dinoH, speed, key_pressed])
+            #print('obstacle', obstacle_index, 'obstacleX', obstacleX, 'obstacleY', obstacleY, 'obstacleH', min(arr[0, :]), 'dist', current_dist, 'dinoH', dinoH, 'speed', speed, 'pressed', key_pressed)
         cv2.imshow('window', printscreen)
         #out.write(printscreen)
         cv2.waitKey(10)
 
+        
+        data=np.loadtxt('C:/Users/권진우/Documents/GitHub/DeeplearnStudy/dinosour/playdata.csv',delimiter=',',dtype=np.float32)#파일을 읽기전용으로 오픈
+        learning_rate = 0.001
+        training_epochs = 15
+        batch_size = 100
+        learn_variable=7
+        nb_classes=3
+        x_data=data[:,0:-1]
+        y_data=data[:,[-1]]
+        print(x_data)
+        print(y_data)
+        X = tf.placeholder(tf.float32, [None, learn_variable])
+        # 0 - 9 digits recognition = 10 classes
+        Y = tf.placeholder(tf.float32, [None, 1])
+
+        W1 = tf.Variable(tf.random_normal([learn_variable, 10]))
+        b1 = tf.Variable(tf.random_normal([10]))
+        layer1=tf.nn.relu(tf.matmul(X,W1)+b1)
+
+        W2 = tf.Variable(tf.random_normal([10, 10]))
+        b2 = tf.Variable(tf.random_normal([10]))
+        layer2=tf.nn.relu(tf.matmul(layer1,W2)+b2)
+
+
+        W3 = tf.Variable(tf.random_normal([10,nb_classes]))
+        b3 = tf.Variable(tf.random_normal([nb_classes]))
+        logits = tf.matmul(layer2, W3) + b3
+
+            # define cost/loss & optimizer
+        cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y))
+        optimizer = tf.train.AdamOptimizer(learning_rate=0.01).minimize(cost)
+
+            # initialize
+        training_epochs = 5
+        batch_size = 100
+        saver = tf.train.Saver()
+        SAVER_DIR = "play_model"
+        checkpoint_path = os.path.join(SAVER_DIR, "my_model")
+        ckpt = tf.train.get_checkpoint_state(SAVER_DIR)
+        with tf.Session() as sess:
+            # Initialize TensorFlow variables
+            sess.run(tf.global_variables_initializer())
+
+            if ckpt and ckpt.model_checkpoint_path:
+                saver.restore(sess, ckpt.model_checkpoint_path)    
+                print("Prediction: ", sess.run(tf.argmax(tf.nn.softmax(logits), 1), feed_dict={X: [[obstacle_index, obstacleX, obstacleY, min(arr[0, :]), current_dist, dinoH, speed]]}))
+                sess.close()
+                   
+                        
+                    
+            # Training cycle
+        
 screen_record()
 
 csvfile.close()
