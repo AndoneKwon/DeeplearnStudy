@@ -14,8 +14,6 @@ file=open("playdata.csv","r",newline='')#파일을 생성 혹은 오픈
 csv_write=csv.writer(file)#연 파일을 csv로 바꿔줌
 
 def Learning():
-    learning_rate = 0.001
-    training_epochs = 15
     batch_size = 100
     learn_variable=7
     nb_classes=3
@@ -41,7 +39,7 @@ def Learning():
 
     # define cost/loss & optimizer
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y))
-    optimizer = tf.train.AdamOptimizer(learning_rate=0.01).minimize(cost)
+    optimizer = tf.train.AdamOptimizer(learning_rate=0.1).minimize(cost)
 
     saver = tf.train.Saver()
     SAVER_DIR = "play_model"
@@ -49,7 +47,7 @@ def Learning():
     ckpt = tf.train.get_checkpoint_state(SAVER_DIR)
     
     # initialize
-    training_epochs = 10
+    training_epochs = 100
     batch_size = 100
 
     with tf.Session() as sess:

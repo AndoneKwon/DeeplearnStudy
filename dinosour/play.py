@@ -155,15 +155,14 @@ keyboard = Controller()
 tf.reset_default_graph()
 
 data=np.loadtxt('playdata.csv',delimiter=',',dtype=np.float32)#파일을 읽기전용으로 오픈
-learning_rate = 0.001
-training_epochs = 15
+
 batch_size = 100
 learn_variable=7
 nb_classes=3
 x_data=data[:,0:-1]
 y_data=data[:,[-1]]
-print(x_data)
-print(y_data)
+# print(x_data)
+# print(y_data)
 X = tf.placeholder(tf.float32, [None, learn_variable])
 # 0 - 9 digits recognition = 10 classes
 Y = tf.placeholder(tf.float32, [None, 1])
@@ -183,7 +182,7 @@ logits = tf.matmul(layer2, W3) + b3
 
     # define cost/loss & optimizer
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y))
-optimizer = tf.train.AdamOptimizer(learning_rate=0.01).minimize(cost)
+optimizer = tf.train.AdamOptimizer(learning_rate=0.1).minimize(cost)
 
     # initialize
 training_epochs = 5
@@ -203,7 +202,13 @@ def getLearningResult(data):
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
             prediction = sess.run(tf.argmax(tf.nn.softmax(logits), 1), feed_dict={X: [data]})
+            print(data)
             print("Prediction: ", prediction)
+            # if prediction == 0:        
+            #     keyboard.press(Key.up) 
+            #     keyboard.release(Key.up)
+            # elif prediction == 2:        
+            #     keyboard.press_and_release(Key.down)
             sess.close()
         
 def getPlayData():
@@ -225,8 +230,7 @@ def getPlayData():
     pre_dist = 0
 
     # 메인 루프
-    while(True):    
-        key_pressed = 'null' # 키값 초기화
+    while(True):
         pre_dist = current_dist # 속도 측정
         obstacle_index = 0 # 장애물 종류
 
@@ -271,12 +275,13 @@ def getPlayData():
         if pts:
             arr = np.array(pts)
             current_dist =  min(arr[: ,0]) - dinoX
-            speed = pre_dist - current_dist
+            speed = int((pre_dist - current_dist) / 2)
             if speed < 0:
                 speed = 0
             #print('obstacle', obstacle_index, 'obstacleX', obstacleX, 'obstacleY', obstacleY, 'obstacleH', min(arr[0, :]), 'dist', current_dist, 'dinoH', dinoH, 'speed', speed, 'pressed', key_pressed)
             input = [obstacle_index, obstacleX, obstacleY, min(arr[0, :]), current_dist, dinoH, speed]
             getLearningResult(input)
+            
         #cv2.imshow('window', printscreen)
         cv2.waitKey(10)
 
