@@ -8,8 +8,8 @@ from PIL import ImageGrab
 
 
 #데이터 저장
-csvfile = open('playdata.csv', 'a', newline='') # 이어쓰기모드
-#csvfile = open('playdata.csv', 'w', newline='') # 새로쓰기모드
+#csvfile = open('playdata.csv', 'a', newline='') # 이어쓰기모드
+csvfile = open('playdata.csv', 'w', newline='') # 새로쓰기모드
 csvwriter = csv.writer(csvfile)
 
 def screen_record():
@@ -82,14 +82,14 @@ def screen_record():
         if pts:
             # 키보드 인풋 up(뛰기) down(숙이기) q(종료)
             if keyboard.is_pressed('up'):
-                key_pressed = '2'
+                key_pressed = '3'
             elif keyboard.is_pressed('down'):
-                key_pressed = '1'
+                key_pressed = '2'
             elif cv2.waitKey(10) & keyboard.is_pressed('q'): #0xFF == ord('q'):
                 cv2.destroyAllWindows()
                 break
             else:
-                key_pressed ='0'
+                key_pressed ='1'
             arr = np.array(pts)
             current_dist =  min(arr[: ,0]) - dinoX
             speed = pre_dist - current_dist

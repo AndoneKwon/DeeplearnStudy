@@ -10,7 +10,7 @@ import os
 from pynput.mouse import Controller
 from PIL import ImageGrab
 
-file=open("C:/Users/권진우/Documents/GitHub/DeeplearnStudy/dinosour/playdata.csv","r",newline='')#파일을 생성 혹은 오픈
+file=open("playdata.csv","r",newline='')#파일을 생성 혹은 오픈
 csv_write=csv.writer(file)#연 파일을 csv로 바꿔줌
 
 def Learning():
@@ -19,7 +19,7 @@ def Learning():
     batch_size = 100
     learn_variable=7
     nb_classes=3
-    data=np.loadtxt('C:/Users/권진우/Documents/GitHub/DeeplearnStudy/dinosour/playdata.csv',delimiter=',',dtype=np.float32)#파일을 읽기전용으로 오픈
+    data=np.loadtxt('playdata.csv',delimiter=',',dtype=np.float32)#파일을 읽기전용으로 오픈
     x_data=data[:,0:-1]
     y_data=data[:,[-1]]
     X = tf.placeholder(tf.float32, [None, learn_variable])
