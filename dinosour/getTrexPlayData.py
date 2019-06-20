@@ -35,7 +35,9 @@ def screen_record():
 
     # 메인 루프
     while(True):    
-        key_pressed = 'null' # 키값 초기화
+        up_pressed = 0 # 키값 초기화
+        down_pressed = 0
+        not_pressed = 0
         pre_dist = current_dist # 속도 측정
         obstacle_index = 0 # 장애물 종류
 
@@ -82,24 +84,24 @@ def screen_record():
         if pts:
             # 키보드 인풋 up(뛰기) down(숙이기) q(종료)
             if keyboard.is_pressed('up'):
-                key_pressed = '3'
+                up_pressed = 1
             elif keyboard.is_pressed('down'):
-                key_pressed = '2'
+                down_pressed = 1
             elif cv2.waitKey(10) & keyboard.is_pressed('q'): #0xFF == ord('q'):
                 cv2.destroyAllWindows()
                 break
             else:
-                key_pressed ='1'
+                not_pressed =1
             arr = np.array(pts)
             current_dist =  min(arr[: ,0]) - dinoX
             speed = pre_dist - current_dist
             if speed < 0:
                 speed = 0
-            print('obstacle', obstacle_index, 'obstacleX', obstacleX, 'obstacleY', obstacleY, 'obstacleH', min(arr[0, :]), 'dist', current_dist, 'dinoH', dinoH, 'speed', speed, 'pressed', key_pressed)
-            csvwriter.writerow([obstacle_index, obstacleX, obstacleY, min(arr[0, :]), current_dist, dinoH, speed, key_pressed])
+            #print('obstacle', obstacle_index, 'obstacleX', obstacleX, 'obstacleY', obstacleY, 'obstacleH', min(arr[0, :]), 'dist', current_dist, 'dinoH', dinoH, 'speed', speed, 'pressed', key_pressed)
+            csvwriter.writerow([obstacle_index, obstacleX, obstacleY, min(arr[0, :]), current_dist, dinoH, speed, up_pressed, down_pressed, not_pressed])
         cv2.imshow('window', printscreen)
         #out.write(printscreen)
-        cv2.waitKey(10)
+        cv2.waitKey(20)
 
 screen_record()
 

@@ -6,7 +6,6 @@ import glob
 import csv
 import tensorflow as tf
 import os
-#import tensorflow as tf
 from pynput.mouse import Controller
 from PIL import ImageGrab
 
@@ -18,11 +17,11 @@ def Learning():
     learn_variable=7
     nb_classes=3
     data=np.loadtxt('playdata.csv',delimiter=',',dtype=np.float32)#파일을 읽기전용으로 오픈
-    x_data=data[:,0:-1]
-    y_data=data[:,[-1]]
+    x_data=data[:,0:-3]
+    y_data=data[:, learn_variable:]
     X = tf.placeholder(tf.float32, [None, learn_variable])
     # 0 - 9 digits recognition = 10 classes
-    Y = tf.placeholder(tf.float32, [None, 1])
+    Y = tf.placeholder(tf.float32, [None, 3])
     
     W1 = tf.Variable(tf.random_normal([learn_variable, 10]))
     b1 = tf.Variable(tf.random_normal([10]))
@@ -39,7 +38,7 @@ def Learning():
 
     # define cost/loss & optimizer
     cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y))
-    optimizer = tf.train.AdamOptimizer(learning_rate=0.1).minimize(cost)
+    optimizer = tf.train.AdamOptimizer(learning_rate=1).minimize(cost)
 
     saver = tf.train.Saver()
     SAVER_DIR = "play_model"
@@ -47,7 +46,7 @@ def Learning():
     ckpt = tf.train.get_checkpoint_state(SAVER_DIR)
     
     # initialize
-    training_epochs = 100
+    training_epochs = 10
     batch_size = 100
 
     with tf.Session() as sess:
@@ -57,16 +56,16 @@ def Learning():
         # Training cycle
         for epoch in range(training_epochs):
             avg_cost = 0
-            for i in range(1581):
-                c, _ = sess.run([cost, optimizer], feed_dict={
-                                X: x_data, Y: y_data})
+            totalbatch=int(data.shape[0]/batch_size)
+
+            for i in range(data.shape[0] - 1):
+                c, _ = sess.run([cost, optimizer], feed_dict={X: x_data, Y: y_data})
+                avg_cost=c/totalbatch
             checkpoint_path=saver.save(sess, 'play_model/my_model')
 
-            print('Epoch:', '%04d' % (epoch + 1),
-                  'cost =', '{:.9f}'.format(avg_cost))
+            print('Epoch:', '%04d' % (epoch + 1), 'cost =', '{:.9f}'.format(avg_cost))
 
         print("Learning finished")
-    
         
 #screen_record()
 file.close()
