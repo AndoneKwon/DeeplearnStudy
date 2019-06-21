@@ -284,7 +284,7 @@ def getPlayData():
         loc = np.where(GameOver >= 0.8)
         for pt in zip(*loc[::-1]):
             print('gameover')
-            is_gameover = True
+            exit()
           
         for obstacle in obstacles:
             res = cv2.matchTemplate(scr_gray, obstacle, cv2.TM_CCOEFF_NORMED) # 장애물도 공룡처럼 찾는다
