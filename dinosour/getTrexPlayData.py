@@ -4,12 +4,13 @@ import csv
 import numpy as np
 import keyboard
 import glob
+import time
 from PIL import ImageGrab
 
 
 #데이터 저장
-#csvfile = open('playdata.csv', 'a', newline='') # 이어쓰기모드
-csvfile = open('playdata.csv', 'w', newline='') # 새로쓰기모드
+csvfile = open('playdata.csv', 'a', newline='') # 이어쓰기모드
+#csvfile = open('playdata.csv', 'w', newline='') # 새로쓰기모드
 csvwriter = csv.writer(csvfile)
 
 def screen_record():
@@ -33,11 +34,15 @@ def screen_record():
     current_dist = 0
     pre_dist = 0
 
+
+    start = time.time()
+
     # 메인 루프
-    while(True):    
+    while(True):
         up_pressed = 0 # 키값 초기화
         down_pressed = 0
         not_pressed = 0
+        key_pressed = 0
         pre_dist = current_dist # 속도 측정
         obstacle_index = 0 # 장애물 종류
 
@@ -65,6 +70,7 @@ def screen_record():
         for pt in zip(*loc[::-1]):
             print('gameover')
             csvfile.close()
+            exit()
           
         #sys.exit()
           
@@ -91,17 +97,20 @@ def screen_record():
                 cv2.destroyAllWindows()
                 break
             else:
-                not_pressed =1
+                not_pressed = 1
             arr = np.array(pts)
             current_dist =  min(arr[: ,0]) - dinoX
+            if current_dist < 0:
+                current_dist = 250
             speed = pre_dist - current_dist
             if speed < 0:
                 speed = 0
             #print('obstacle', obstacle_index, 'obstacleX', obstacleX, 'obstacleY', obstacleY, 'obstacleH', min(arr[0, :]), 'dist', current_dist, 'dinoH', dinoH, 'speed', speed, 'pressed', key_pressed)
-            csvwriter.writerow([obstacle_index, obstacleX, obstacleY, min(arr[0, :]), current_dist, dinoH, speed, up_pressed, down_pressed, not_pressed])
+            #csvwriter.writerow([obstacle_index, obstacleX, obstacleY, min(arr[0, :]), current_dist, dinoH, key_pressed])
+            csvwriter.writerow([obstacle_index, int(min(arr[0, :]) / 10), int(current_dist / 30), up_pressed, down_pressed, not_pressed])
         cv2.imshow('window', printscreen)
         #out.write(printscreen)
-        cv2.waitKey(20)
+        cv2.waitKey(10)
 
 screen_record()
 

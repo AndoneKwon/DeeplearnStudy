@@ -11,33 +11,36 @@ data=np.loadtxt('playdata.csv',delimiter=',',dtype=np.float32)#파일을 읽기�
 
 def getLearningResult():
 
-
-    batch_size = 100
     learn_variable=7
-    nb_classes=3
+    nb_classes=2
+    data=np.loadtxt('playdata.csv',delimiter=',',dtype=np.float32)#파일을 읽기전용으로 오픈
     x_data=data[:,0:-1]
-    y_data=data[:,[-1]]
-    # print(x_data)
-    # print(y_data)
+    y_data=data[:, learn_variable:]
     X = tf.placeholder(tf.float32, [None, learn_variable])
     # 0 - 9 digits recognition = 10 classes
     Y = tf.placeholder(tf.float32, [None, 1])
 
-    W1 = tf.Variable(tf.random_normal([learn_variable, 10]))
-    b1 = tf.Variable(tf.random_normal([10]))
+    dropout_rate=tf.placeholder("float")
+    W1 = tf.Variable(tf.random_normal([learn_variable, 20]))
+    b1 = tf.Variable(tf.random_normal([20]))
     layer1=tf.nn.relu(tf.matmul(X,W1)+b1)
 
-    W2 = tf.Variable(tf.random_normal([10, 10]))
-    b2 = tf.Variable(tf.random_normal([10]))
+    W2 = tf.Variable(tf.random_normal([20, 20]))
+    b2 = tf.Variable(tf.random_normal([20]))
     layer2=tf.nn.relu(tf.matmul(layer1,W2)+b2)
+    # layer2=(_layer2,dropout_rate)
 
-    W3 = tf.Variable(tf.random_normal([10,nb_classes]))
-    b3 = tf.Variable(tf.random_normal([nb_classes]))
-    logits = tf.matmul(layer2, W3) + b3
+    # W3 = tf.Variable(tf.random_normal([20, 20]))
+    # b3 = tf.Variable(tf.random_normal([20]))
+    # layer3=tf.nn.relu(tf.matmul(layer2,W3)+b3)
 
-    # define cost/loss & optimizer
-    cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y))
-    optimizer = tf.train.AdamOptimizer(learning_rate=0.1).minimize(cost)
+    W3 = tf.Variable(tf.random_normal([20, 20]))
+    b3 = tf.Variable(tf.random_normal([20]))
+    layer3=tf.nn.relu(tf.matmul(layer2,W3)+b3)
+
+    W4 = tf.Variable(tf.random_normal([20,nb_classes]))
+    b4 = tf.Variable(tf.random_normal([nb_classes]))
+    logits = tf.matmul(layer3, W4) + b4
 
     # initialize
     training_epochs = 5
@@ -54,7 +57,8 @@ def getLearningResult():
 
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
-            prediction = sess.run(tf.argmax(tf.nn.softmax(logits), 1), feed_dict={X: [[3,49,25,96,66,87,30]]})
+#            prediction = sess.run(tf.argmax(tf.nn.softmax(logits), 1), feed_dict={X: [[6,23,31,96,77,87,36]]})
+            prediction = sess.run(tf.argmax(tf.nn.softmax(logits), 1), feed_dict={X: [[6,23,31,96,155,87,36]]})
             #print(data)
             print("Prediction: ", prediction)
             # if prediction == 0:        

@@ -154,35 +154,65 @@ tf.reset_default_graph()
 
 data=np.loadtxt('playdata.csv',delimiter=',',dtype=np.float32)#파일을 읽기전용으로 오픈
 
-batch_size = 100
-learn_variable=7
-nb_classes=3
-x_data=data[:,0:-3]
-y_data=data[:, learn_variable:]
-X = tf.placeholder(tf.float32, [None, learn_variable])
-# 0 - 9 digits recognition = 10 classes
-Y = tf.placeholder(tf.float32, [None, 3])
+x_data = np.transpose(data[:3])
+y_data = np.transpose(data[3:])
 
-W1 = tf.Variable(tf.random_normal([learn_variable, 10]))
-b1 = tf.Variable(tf.random_normal([10]))
-layer1=tf.nn.relu(tf.matmul(X,W1)+b1)
+print(x_data)
+print(y_data)
 
-W2 = tf.Variable(tf.random_normal([10, 10]))
-b2 = tf.Variable(tf.random_normal([10]))
-layer2=tf.nn.relu(tf.matmul(layer1,W2)+b2)
+X = tf.placeholder("float", [None, 3])
+Y = tf.placeholder("float", [None, 3])
 
+# feature별 가중치를 난수로 초기화. feature는 bias 포함해서 3개. 1행 3열.
+W = tf.Variable(tf.zeros([3, 3])) 
 
-W3 = tf.Variable(tf.random_normal([10,nb_classes]))
-b3 = tf.Variable(tf.random_normal([nb_classes]))
-logits = tf.matmul(layer2, W3) + b3
+hypothesis = tf.nn.softmax(tf.matmul(X, W))
+
+cost = tf.reduce_mean(-tf.reduce_sum(Y * tf.log(hypothesis), reduction_indices=1))
+
+learning_rate = 0.01
+train = tf.train.GradientDescentOptimizer(learning_rate).minimize(cost)
+
+init = tf.initialize_all_variables()
+
+# learn_variable=1
+# nb_classes=2
+# data=np.loadtxt('playdata.csv',delimiter=',',dtype=np.float32)#파일을 읽기전용으로 오픈
+# x_data=data[:,0:-1]
+# y_data=data[:, learn_variable:]
+# X = tf.placeholder(tf.float32, [None, learn_variable])
+# # 0 - 9 digits recognition = 10 classes
+# Y = tf.placeholder(tf.float32, [None, 1])
+
+# # dropout_rate=tf.placeholder("float")
+# W1 = tf.Variable(tf.random_normal([learn_variable, nb_classes]))
+# b1 = tf.Variable(tf.random_normal([nb_classes]))
+# logits=tf.nn.relu(tf.matmul(X,W1)+b1)
+
+# W2 = tf.Variable(tf.random_normal([20, 20]))
+# b2 = tf.Variable(tf.random_normal([20]))
+# layer2=tf.nn.relu(tf.matmul(layer1,W2)+b2)
+# layer2=(_layer2,dropout_rate)
+
+# W3 = tf.Variable(tf.random_normal([20, 20]))
+# b3 = tf.Variable(tf.random_normal([20]))
+# layer3=tf.nn.relu(tf.matmul(layer2,W3)+b3)
+
+# W3 = tf.Variable(tf.random_normal([20, 20]))
+# b3 = tf.Variable(tf.random_normal([20]))
+# layer3=tf.nn.relu(tf.matmul(layer2,W3)+b3)
+
+# W4 = tf.Variable(tf.random_normal([20,nb_classes]))
+# b4 = tf.Variable(tf.random_normal([nb_classes]))
+# logits = tf.matmul(layer3, W4) + b4
 
     # define cost/loss & optimizer
-cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y))
-optimizer = tf.train.AdamOptimizer(learning_rate=1).minimize(cost)
+#cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y))
+#optimizer = tf.train.AdamOptimizer(learning_rate=1).minimize(cost)
 
     # initialize
-training_epochs = 5
-batch_size = 100
+training_epochs = 200
+batch_size = 50
 
 saver = tf.train.Saver()
 SAVER_DIR = "play_model"
@@ -197,11 +227,13 @@ def getLearningResult(input):
 
         if ckpt and ckpt.model_checkpoint_path:
             saver.restore(sess, ckpt.model_checkpoint_path)
-            prediction = sess.run(tf.argmax(tf.nn.softmax(logits), 1), feed_dict={X: [input]})
+            prediction = sess.run(tf.argmax(hypothesis, 1), feed_dict={X: [input]})
             print(input)
             print("Prediction: ", prediction)
-            # if prediction == 2:
-            #     pyautogui.press('up')
+            if prediction == 0:
+                pyautogui.keyDown('up')
+            elif prediction == 1:
+                pyautogui.keyDown('down')
             sess.close()
         
 def getPlayData():
@@ -211,6 +243,7 @@ def getPlayData():
     w_dino, h_dino = dino.shape[::-1]
 
     gameover = cv2.imread('gameover.jpg', 0)
+    is_gameover = False
 
     # glob 로컬 파일을 읽는 라이브러리 -> 장애물 사진들을 읽음 -> 패턴으로 사용
     files = glob.glob ('obstacle/*.jpg')
@@ -226,6 +259,7 @@ def getPlayData():
     while(True):
         pre_dist = current_dist # 속도 측정
         obstacle_index = 0 # 장애물 종류
+        obstacleH = 0
 
         # 스크린 캡쳐 즉 원본화면
         printscreen = np.array(ImageGrab.grab(bbox=(650,350,1300,500)))
@@ -245,12 +279,12 @@ def getPlayData():
             dinoH = pt[1]
 
         #게임오버
-        isGameOver = cv2.matchTemplate(scr_gray, gameover, cv2. TM_CCOEFF_NORMED)
+        GameOver = cv2.matchTemplate(scr_gray, gameover, cv2. TM_CCOEFF_NORMED)
         w, h = gameover.shape[::-1]
-        loc = np.where(isGameOver >= 0.8)
+        loc = np.where(GameOver >= 0.8)
         for pt in zip(*loc[::-1]):
             print('gameover')
-            exit()
+            is_gameover = True
           
         for obstacle in obstacles:
             res = cv2.matchTemplate(scr_gray, obstacle, cv2.TM_CCOEFF_NORMED) # 장애물도 공룡처럼 찾는다
@@ -269,13 +303,17 @@ def getPlayData():
             arr = np.array(pts)
             current_dist =  min(arr[: ,0]) - dinoX
             speed = int((pre_dist - current_dist) / 2)
-            if speed < 0:
-                speed = 0
+            obstacleH = min(arr[0, :])
+            if current_dist < 0:
+                current_dist = 250
             #print('obstacle', obstacle_index, 'obstacleX', obstacleX, 'obstacleY', obstacleY, 'obstacleH', min(arr[0, :]), 'dist', current_dist, 'dinoH', dinoH, 'speed', speed, 'pressed', key_pressed)
-            input = [obstacle_index, obstacleX, obstacleY, min(arr[0, :]), current_dist, dinoH, speed]
-            getLearningResult(input)
+            #input = [obstacle_index, obstacleX, obstacleY, min(arr[0, :]), current_dist, dinoH]
+        input = [obstacle_index, int(obstacleH / 10), int(current_dist / 30)]
+        getLearningResult(input)
+        if is_gameover:
+            pyautogui.keyDown('space')
             
         #cv2.imshow('window', printscreen)
-        cv2.waitKey(10)
+        cv2.waitKey(0)
 
 getPlayData()
