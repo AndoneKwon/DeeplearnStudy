@@ -4,3 +4,7 @@ getTrexPlayData.py -> 데이터셋을 얻는 과정
 play.py -> 데이터셋을 기반으로 러닝을 진행
 <br>
 test.py -> 학습한 모델을 기반으로 게임을 플레이함.
+
+![그림1](https://user-images.githubusercontent.com/45382126/82474626-47818100-9b06-11ea-873a-abf807d35d31.png)
+
+OpenCV를 통해 공룡과 장애물의 사이의 거리를 측정해 데이터셋으로 저장한후 DNN을 이용해 학습을 한 후 학습한 인공신경망을 이용해 게임을 진행한다.
